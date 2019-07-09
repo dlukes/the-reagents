@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+#map {
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+}
+
+#controls {
+  height: 3em;
+  width: 100vw;
+  padding: .5em;
+  position: fixed;
+  background: rgba(255, 255, 255, .5);
+  bottom: 0;
+}
+
+.value {
+  width: 3em;
+}
+
+.slider {
+  width: 70vw;
+}
+
+input {
+  width: 100%;
+}
+
+/* #contrast {
+  margin: auto auto;
+  display: block;
+  width: 90%;
+} */
