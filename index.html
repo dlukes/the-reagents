@@ -12,20 +12,42 @@
 
     <div id="map" class="map"></div>
 
+    <button id="info" class="btn btn-lg btn-light fas fa-info" type="button"></button>
+
+    <div id="sidebar">
+      <a id="reset" href="#">
+        <img src="./images/reset@2x.png" alt="reset">
+      </a>
+      <a id="sun" href="#">
+        <img src="./images/sun@2x.png" alt="Sun">
+      </a>
+      <a id="flask" href="#">
+        <img src="./images/flask@2x.png" alt="Flask">
+      </a>
+      <a id="coffee" href="#">
+        <img src="./images/coffee@2x.png" alt="Coffee">
+      </a>
+    </div>
+
+    <!-- TODO: switch this to noUiSlider -->
     <table id="controls">
       <tr>
-        <td>Contrast of processed</td>
-        <td class="value" id="contrast-out">0</td>
+        <td>Split</td>
         <td class="slider">
-          <input id="contrast" class="custom-range form-control form-control-lg" type="range" min="-150" max="255"
-            value="0" />
+          <input id="split" class="custom-range" type="range" min="0" max="100" value="50" />
         </td>
       </tr>
       <tr>
-        <td>Original / processed</td>
-        <td class="value" id="opacity-out">100/0</td>
+        <td>Intensity</td>
         <td class="slider">
-          <input id="opacity" class="custom-range" type="range" min="0" max="100" value="0" />
+          <input id="intensity" class="custom-range" type="range" min="30" max="100" value="30" />
+        </td>
+      </tr>
+      <tr>
+        <td>Contrast</td>
+        <td class="slider">
+          <input id="contrast" class="custom-range form-control form-control-lg" type="range" min="-150" max="255"
+            value="0" />
         </td>
       </tr>
     </table>

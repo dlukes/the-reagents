@@ -1,6 +1,8 @@
-// import bootstrap from "bootstrap";
 import $ from "jquery";
+import popper from "popper.js";
+import bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
+import "@fortawesome/fontawesome-free/css/all.css";
 
 import "ol/ol.css";
 import Map from "ol/Map";
@@ -10,6 +12,7 @@ import IIIF from "ol/source/IIIF";
 import IIIFInfo from "ol/format/IIIFInfo";
 import RasterSource from "ol/source/Raster";
 import ImageLayer from "ol/layer/Image";
+import Static from 'ol/source/ImageStatic.js';
 
 import "./index.css";
 
@@ -18,25 +21,14 @@ const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Code
 
 const container = document.getElementById("map");
 const contrast = document.getElementById("contrast");
-const contrastOut = document.getElementById("contrast-out");
-const opacity = document.getElementById("opacity");
-const opacityOut = document.getElementById("opacity-out");
+const intensity = document.getElementById("intensity");
+const split = document.getElementById("split");
+const coffee = document.getElementById("coffee");
+const reset = document.getElementById("reset");
 
-map = new Map({
-  target: container
-});
-
-const radius = 70;
-
-// get the pixel position with every move
-let mousePosition = null;
-container.addEventListener("mousemove", function (event) {
-  mousePosition = map.getEventPixel(event);
-  map.render();
-});
-container.addEventListener("mouseout", function () {
-  mousePosition = null;
-  map.render();
+const map = new Map({
+  target: container,
+  controls: [],
 });
 
 async function createImageLayer(iiifInfoUrl, map) {
@@ -82,53 +74,98 @@ async function createImageLayer(iiifInfoUrl, map) {
   return { iiif, raster, image };
 }
 
+function createCoffeeLayer() {
+  const coffeeWidth = 555,
+    coffeeHeight = 472,
+    coffeeLeft = 1000,
+    coffeeBottom = -4000,
+    scale = 4,
+    coffeeRight = coffeeLeft + coffeeWidth * scale,
+    coffeeTop = coffeeBottom + coffeeHeight * scale;
+  const coffee = new ImageLayer({
+    source: new Static({
+      // attributions: '© <a href="http://xkcd.com/license.html">xkcd</a>',
+      url: require("./images/coffee-stain.png"),
+      imageExtent: [coffeeLeft, coffeeBottom, coffeeRight, coffeeTop],
+    }),
+    zindex: 10
+  });
+  map.addLayer(coffee);
+  coffee.setVisible(false);
+  // coffee.on("prerender", (event) => {
+  //   event.context.globalCompositeOperation = "color-burn";
+  // })
+  return coffee;
+}
+
 (async () => {
-  const { image: image1 } = await createImageLayer(info1, map);
-  const { raster: raster2, image: image2 } = await createImageLayer(info2, map);
+  await createImageLayer(info1, map);
+  const { raster, image } = await createImageLayer(info2, map);
+  const coffeeLayer = createCoffeeLayer();
 
   // hook up input events to the "map"
-  contrast.addEventListener("input", () => raster2.changed());
-  opacity.addEventListener("input", () => map.render());
+  contrast.addEventListener("input", () => raster.changed());
+  intensity.addEventListener("input", () => map.render());
+  split.addEventListener("input", () => map.render());
+  coffee.addEventListener("click", () => {
+    $("#coffee")
+      .animate({ 'left': (-10) + 'px' }, 200)
+      .animate({ 'left': (+20) + 'px' }, 200)
+      .animate({ 'left': (-10) + 'px' }, 200);
+    coffeeLayer.setVisible(true)
+  });
+  reset.addEventListener("click", () => {
+    $("#reset")
+      .animate({ 'left': (-100) + 'px' }, 200)
+      .animate({ 'left': (+200) + 'px' }, 200)
+      .animate({ 'left': (-100) + 'px' }, 200);
+    coffeeLayer.setVisible(false);
+  });
 
   // dynamically set the contrast value
-  raster2.on("beforeoperations", (event) => {
+  raster.on("beforeoperations", (event) => {
     // this is where you can pass data into the pixel operation
     const contrastVal = parseInt(contrast.value);
-    contrastOut.innerText = contrastVal;
     const data = event.data;
     data.contrast = contrastVal;
   });
 
-  // before rendering the layer, do some clipping / or adjust opacity
-  image2.on("prerender", function (event) {
-    var ctx = event.context;
-    var pixelRatio = event.frameState.pixelRatio;
+  // before rendering the layer, do some clipping and adjust opacity
+  image.on("prerender", function (event) {
+    const opacityVal = parseInt(intensity.value);
+    // image1.setOpacity(1 - opacityVal / 100);
+    image.setOpacity(opacityVal / 100);
+
+    const ctx = event.context;
+    const pixelRatio = event.frameState.pixelRatio;
+    const splitVal = parseInt(split.value);
     ctx.save();
     ctx.beginPath();
-    if (mousePosition) {
-      image1.setOpacity(1);
-      image2.setOpacity(1);
-      // only show a circle around the mouse
-      ctx.arc(mousePosition[0] * pixelRatio, mousePosition[1] * pixelRatio, radius * pixelRatio, 0, 2 * Math.PI);
-      ctx.lineWidth = 5 * pixelRatio;
-      ctx.strokeStyle = "rgba(0,0,0,0.5)";
-      ctx.stroke();
-      ctx.clip();
-    } else {
-      // check opacity slider and do some blending based on that
-      // the opacity slider should probably continuously fade in the multi-spectrum
-      // image while continuously fading out the original one
-      const opacityVal = parseInt(opacity.value);
-      image1.setOpacity(1 - opacityVal / 100);
-      image2.setOpacity(opacityVal / 100);
-      opacityOut.innerText = `${100 - opacityVal}/${opacityVal}`;
-    }
+    ctx.rect(0, 0, ctx.canvas.width * splitVal / 100, ctx.canvas.height);
+    ctx.lineWidth = 5 * pixelRatio;
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.stroke();
+    ctx.clip();
   });
 
   // after rendering the layer, restore the canvas context
-  image2.on("postrender", function (event) {
+  image.on("postrender", function (event) {
     const ctx = event.context;
     ctx.restore();
   });
 
+  map.render()
 })();
+
+$("#info").popover({
+  title: "Foo bar baz",
+  content: "Bar baz qux"
+})
+$('#info').on('shown.bs.popover', (event) => {
+  event.target.classList.remove("fa-info");
+  event.target.classList.add("fa-times");
+})
+$('#info').on('hidden.bs.popover', (event) => {
+  event.target.classList.remove("fa-times");
+  event.target.classList.add("fa-info");
+})
