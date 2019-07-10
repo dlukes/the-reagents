@@ -3,35 +3,34 @@
 
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Reagents</title>
-  <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-  <script
-    src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
-  <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-  <div id="map" class="map"></div>
-  <!-- <div class="controls">
-    <div id="iiif-notification">&nbsp;</div>
-    Enter <code>info.json</code> URL:
-    <input type="text" id="imageInfoUrl"
-      value="https://iiif.ub.uni-leipzig.de/iiif/j2k/0000/0107/0000010732/00000072.jpx/info.json">
-    <button id="display">Display image</button>
-  </div> -->
+  <div class="container-fluid">
 
-  <table id="controls">
-    <tr>
-      <td>Contrast</td>
-      <td class="value" id="contrast-out">0</td>
-      <td class="slider"><input id="contrast" type="range" min="-150" max="255" value="0" /></td>
-    </tr>
-    <tr>
-      <td>Opacity</td>
-      <td class="value" id="opacity-out">0</td>
-      <td class="slider"><input id="opacity" type="range" min="0" max="100" value="0" /></td>
-    </tr>
-  </table>
+    <div id="map" class="map"></div>
+
+    <table id="controls">
+      <tr>
+        <td>Contrast of processed</td>
+        <td class="value" id="contrast-out">0</td>
+        <td class="slider">
+          <input id="contrast" class="custom-range form-control form-control-lg" type="range" min="-150" max="255"
+            value="0" />
+        </td>
+      </tr>
+      <tr>
+        <td>Original / processed</td>
+        <td class="value" id="opacity-out">100/0</td>
+        <td class="slider">
+          <input id="opacity" class="custom-range" type="range" min="0" max="100" value="0" />
+        </td>
+      </tr>
+    </table>
+
+  </div>
 
   <script src="index.js"></script>
 </body>

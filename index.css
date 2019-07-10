@@ -3,6 +3,10 @@ body {
   font-family: sans-serif;
 }
 
+.container-fluid {
+  padding: 0;
+}
+
 #map {
   width: 100vw;
   height: 100vh;
@@ -10,7 +14,7 @@ body {
 }
 
 #controls {
-  height: 3em;
+  height: 5em;
   width: 100vw;
   padding: .5em;
   position: fixed;

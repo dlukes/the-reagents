@@ -1,3 +1,7 @@
+// import bootstrap from "bootstrap";
+import $ from "jquery";
+import "bootstrap/dist/css/bootstrap.css";
+
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
@@ -6,6 +10,8 @@ import IIIF from "ol/source/IIIF";
 import IIIFInfo from "ol/format/IIIFInfo";
 import RasterSource from "ol/source/Raster";
 import ImageLayer from "ol/layer/Image";
+
+import "./index.css";
 
 const info1 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_PSC/info.json";
 const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_KTK_triple/info.json";
@@ -16,7 +22,7 @@ const contrastOut = document.getElementById("contrast-out");
 const opacity = document.getElementById("opacity");
 const opacityOut = document.getElementById("opacity-out");
 
-const map = new Map({
+map = new Map({
   target: container
 });
 
@@ -115,7 +121,7 @@ async function createImageLayer(iiifInfoUrl, map) {
       const opacityVal = parseInt(opacity.value);
       image1.setOpacity(1 - opacityVal / 100);
       image2.setOpacity(opacityVal / 100);
-      opacityOut.innerText = opacityVal;
+      opacityOut.innerText = `${100 - opacityVal}/${opacityVal}`;
     }
   });
 
