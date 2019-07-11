@@ -26,7 +26,6 @@ const container = document.getElementById("map");
 const intensity = document.getElementById("intensity");
 const contrast = document.getElementById("contrast");
 const split = document.getElementById("split");
-const info = document.getElementById("info");
 const reset = document.getElementById("reset");
 const coffee = document.getElementById("coffee");
 
@@ -57,7 +56,6 @@ noUiSlider.create(split, {
 
 const $info = $("#info");
 const $done = $("#done");
-const $reset = $("#reset");
 const $sun = $("#sun");
 const $flask = $("#flask");
 const $coffee = $("#coffee");
@@ -200,67 +198,69 @@ function createCoffeeLayer() {
   map.render()
 })();
 
-const msgs = [
-  {
-    msg: "Looks like you’re trying to read a palimpsest! Pinch to zoom, rotate with two fingers. Adjust light levels using sliders below. When you have finished, e-mail yourself a copy of your masterpiece!",
-    call: () => $done.addClass("hi"),
-  },
-  {
-    msg: "Earlier scholars found sunlight useful.",
-    call: () => $sun.addClass("hi"),
-  },
-  {
-    msg: "This may take some time… would you like some coffee while you work?",
-    call: () => $coffee.addClass("hi"),
-  },
-  {
-    msg: "Have you considered applying a chemical reagent?",
-    call: () => $flask.addClass("hi"),
-  },
-  {
-    msg: "Hope you had fun exploring this page from the Codex Zacynthius!"
-  },
-];
-
-let { msg, timeout, call } = msgs.shift();
-$info.popover({ content: msg, trigger: "manual" });
-$info.on("shown.bs.popover", (event) => {
-  event.target.classList.remove("fa-info");
-  event.target.classList.add("fa-times");
-  if (typeof call !== "undefined") {
-    call();
-  };
-  if (msgs.length) {
-    const msgObj = msgs.shift();
-    msg = msgObj.msg;
-    timeout = msgObj.timeout;
-    call = msgObj.call;
-    // TODO: set a reasonable default timeout here and/or custom timeouts for
-    // the individual messages in the msgs array above.
-    timeout = timeout || 5000;
-  };
+$(".tour").popover({
+  trigger: "manual",
 });
-$info.on("hidden.bs.popover", (event) => {
-  event.target.classList.remove("fa-times");
-  event.target.classList.add("fa-info");
-  $(".hi").removeClass("hi");
-  $info.attr("data-content", msg);
-  if (msgs.length) {
-    const timer = setTimeout(() => {
+$info.on("click", () => $info.popover("toggle"));
+const tour = [
+  [
+    () => {
       $info.popover("show");
-      clearTimeout(timer);
-    }, timeout);
+      $done.addClass("hi");
+    },
+    () => {
+      $info.popover("hide");
+      $done.removeClass("hi");
+    }
+  ],
+  [
+    () => {
+      $sun.popover("show");
+      $sun.addClass("hi");
+    },
+    () => {
+      $sun.popover("hide");
+      $sun.removeClass("hi");
+    }
+  ],
+  [
+    () => {
+      $coffee.popover("show");
+      $coffee.addClass("hi");
+    },
+    () => {
+      $coffee.popover("hide");
+      $coffee.removeClass("hi");
+    }
+  ],
+  [
+    () => {
+      $flask.popover("show");
+      $flask.addClass("hi");
+    },
+    () => {
+      $flask.popover("hide");
+      $flask.removeClass("hi");
+    }
+  ],
+]
+
+function tourNext() {
+  if (!tour.length) {
+    return;
   };
-});
+  const [before, after] = tour.shift();
+  before();
+  setTimeout(() => {
+    after();
+    setTimeout(tourNext, 10000);
+  }, 5000);
+}
 
 const tourTriggers = "click touchend wheel";
 function startTour() {
   $(document).off(tourTriggers, startTour);
-  console.log("TOUR");
   map.getOverlays().clear();
-  $info.popover("show");
-  info.addEventListener("click", () => $info.popover("toggle"));
+  tourNext();
 }
 $(document).on(tourTriggers, startTour);
-
-// TODO: rework this entire message thing so that messages reliably don"t get lost
