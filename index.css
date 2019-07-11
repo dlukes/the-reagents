@@ -1,5 +1,8 @@
 :root {
   --bg: rgba(255, 255, 255, .5);
+  --floating-btn-offset: 1rem;
+  --floating-btn-side: 3rem;
+  /* --sidebar-btn-side: 3.8rem; */
 }
 
 .container-fluid {
@@ -12,34 +15,42 @@
   background-color: black;
 }
 
-#info {
+.floating-btn {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
-  width: 3rem;
-  height: 3rem;
+  top: var(--floating-btn-offset);
+  width: var(--floating-btn-side);
+  height: var(--floating-btn-side);
+  background: var(--bg);
+}
+
+#info {
+  left: var(--floating-btn-offset);
+}
+
+#done {
+  right: var(--floating-btn-offset);
 }
 
 #sidebar {
-  width: 70px;
+  width: 5.5rem;
   position: fixed;
   top: 50%;
   right: 0;
   padding: .5rem;
   transform: translateY(-50%);
   background: var(--bg);
-  border-radius: 1rem 0 0 1rem;
+  border-radius: .3rem 0 0 .3rem;
 }
 
-#sidebar img {
-  width: 100%;
-  /* box-shadow: 5px 10px 18px yellow;
-  background: yellow; */
-  background-image: radial-gradient(rgba(255,0,0,1), rgba(255,0,0,0));
+#sidebar button {
+  display: block;
+  margin: auto;
+  /* height: var(--sidebar-btn-side);
+  width: var(--sidebar-btn-side); */
 }
 
 #controls {
-  height: 5rem;
+  height: 8.5rem;
   width: 100vw;
   padding: .5rem;
   position: fixed;
@@ -47,20 +58,25 @@
   bottom: 0;
 }
 
-.value {
-  width: 3rem;
+.flex-container {
+  display: flex;
+  padding: .5rem
 }
 
 .slider {
-  width: 70vw;
+  flex-grow: 1;
+  padding-left: .5rem;
 }
 
 input {
   width: 100%;
 }
 
-/* #contrast {
-  margin: auto auto;
-  display: block;
-  width: 90%;
-} */
+.modal {
+  top: 5rem;
+}
+
+.hi {
+  box-shadow: 0 0 5rem 1rem fuchsia;
+  background: fuchsia;
+}

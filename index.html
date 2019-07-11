@@ -12,45 +12,145 @@
 
     <div id="map" class="map"></div>
 
-    <button id="info" class="btn btn-lg btn-light fas fa-info" type="button"></button>
+    <button id="info" class="floating-btn btn btn-lg fas fa-info" type="button"></button>
+
+    <button id="done" class="floating-btn btn btn-lg fas fa-check" type="button" data-toggle="modal"
+      data-target="#done-modal"></button>
 
     <div id="sidebar">
-      <a id="reset" href="#">
-        <img src="./images/reset@2x.png" alt="reset">
-      </a>
-      <a id="sun" href="#">
-        <img src="./images/sun@2x.png" alt="Sun">
-      </a>
-      <a id="flask" href="#">
-        <img src="./images/flask@2x.png" alt="Flask">
-      </a>
-      <a id="coffee" href="#">
-        <img src="./images/coffee@2x.png" alt="Coffee">
-      </a>
+      <button id="reset" class="btn btn-lg fas fa-sync-alt fa-2x" type="button"></button>
+      <button id="sun" class="btn btn-lg fas fa-sun fa-2x" type="button" data-toggle="modal"
+        data-target="#sun-modal"></button>
+      <button id="flask" class="btn btn-lg fas fa-flask fa-2x" type="button" data-toggle="modal"
+        data-target="#flask-modal"></button>
+      <button id="coffee" class="btn btn-lg fas fa-coffee fa-2x" type="button" data-toggle="modal"
+        data-target="#coffee-modal"></button>
     </div>
 
-    <!-- TODO: switch this to noUiSlider -->
-    <table id="controls">
-      <tr>
-        <td>Split</td>
-        <td class="slider">
-          <input id="split" class="custom-range" type="range" min="0" max="100" value="50" />
-        </td>
-      </tr>
-      <tr>
-        <td>Intensity</td>
-        <td class="slider">
+    <div id="controls">
+
+      <div class="flex-container">
+        <div class="fas fa-magic fa-lg"></div>
+        <div class="slider">
           <input id="intensity" class="custom-range" type="range" min="30" max="100" value="30" />
-        </td>
-      </tr>
-      <tr>
-        <td>Contrast</td>
-        <td class="slider">
+        </div>
+      </div>
+
+      <div class="flex-container">
+        <div class="fas fa-adjust fa-lg"></div>
+        <div class="slider">
           <input id="contrast" class="custom-range form-control form-control-lg" type="range" min="-150" max="255"
             value="0" />
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+
+      <div class="flex-container">
+        <div class="fas fa-columns fa-lg"></div>
+        <div class="slider">
+          <input id="split" class="custom-range" type="range" min="0" max="100" value="50" />
+        </div>
+      </div>
+
+    </div>
+
+    <div id="sun-modal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">You inspected the palimpsest under sunlight</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              This is perhaps the oldest trick in the book for trying to read
+              palimpsests, but it has its drawbacks. Notably, after repeated
+              exposure to direct sunlight, the writing on the manuscript will
+              have a tendency to fade.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="flask-modal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">You tried to use a chemical reagent on the palimpsest…</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              … but luckily, a conservator from the Cambridge University
+              Library stopped you in the nick of time! In the past, people
+              loved to experiment with chemical reagents on palimpsests, in
+              the hopes that they might get lucky and magically restore the
+              text that had been written over. Unfortunately, this typically
+              resulted in considerable damage to, or outright destruction of,
+              the palimpsest.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="coffee-modal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">You had a cup of coffee while working…</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              … and accidentally left a cup stain on the palimpsest! In general,
+              safety precautions while working with such priceless artifacts forbid eating
+              or drinking in your workspace area to prevent accidents of this type.
+              Luckily, your palimpsest is just a virtual copy, so you can magically clean it
+              up with the <i class="fas fa-sync-alt"></i> button in the sidebar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="done-modal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">A souvenir from the exhibition</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Enter your e-mail address below and we'll send you a screenshot
+              of your work on the palimpsest, along with some additional
+              information on palimpsests in general and <em>Codex
+                Zacynthius</em> in particular.
+            </p>
+            <div class="form-group">
+              <input type="email" class="form-control" id="email" aria-describedby="email-help"
+                placeholder="Enter e-mail">
+              <small id="email-help" class="form-text text-muted">
+                We will securely delete your e-mail address after sending the e-mail.
+              </small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 

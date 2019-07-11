@@ -12,7 +12,7 @@ import IIIF from "ol/source/IIIF";
 import IIIFInfo from "ol/format/IIIFInfo";
 import RasterSource from "ol/source/Raster";
 import ImageLayer from "ol/layer/Image";
-import Static from 'ol/source/ImageStatic.js';
+import Static from "ol/source/ImageStatic.js";
 
 import "./index.css";
 
@@ -23,8 +23,16 @@ const container = document.getElementById("map");
 const contrast = document.getElementById("contrast");
 const intensity = document.getElementById("intensity");
 const split = document.getElementById("split");
-const coffee = document.getElementById("coffee");
+const info = document.getElementById("info");
 const reset = document.getElementById("reset");
+const coffee = document.getElementById("coffee");
+
+const $info = $("#info");
+const $done = $("#done");
+const $reset = $("#reset");
+const $sun = $("#sun");
+const $flask = $("#flask");
+const $coffee = $("#coffee");
 
 const map = new Map({
   target: container,
@@ -84,7 +92,7 @@ function createCoffeeLayer() {
     coffeeTop = coffeeBottom + coffeeHeight * scale;
   const coffee = new ImageLayer({
     source: new Static({
-      // attributions: '© <a href="http://xkcd.com/license.html">xkcd</a>',
+      // attributions: "© <a href="http://xkcd.com/license.html">xkcd</a>",
       url: require("./images/coffee-stain.png"),
       imageExtent: [coffeeLeft, coffeeBottom, coffeeRight, coffeeTop],
     }),
@@ -108,17 +116,18 @@ function createCoffeeLayer() {
   intensity.addEventListener("input", () => map.render());
   split.addEventListener("input", () => map.render());
   coffee.addEventListener("click", () => {
-    $("#coffee")
-      .animate({ 'left': (-10) + 'px' }, 200)
-      .animate({ 'left': (+20) + 'px' }, 200)
-      .animate({ 'left': (-10) + 'px' }, 200);
+    // $("#coffee")
+    //   .animate({ "left": (-10) + "px" }, 200)
+    //   .animate({ "left": (+20) + "px" }, 200)
+    //   .animate({ "left": (-10) + "px" }, 200);
     coffeeLayer.setVisible(true)
   });
+  // TODO: reset should probably also reset the sliders...?
   reset.addEventListener("click", () => {
-    $("#reset")
-      .animate({ 'left': (-100) + 'px' }, 200)
-      .animate({ 'left': (+200) + 'px' }, 200)
-      .animate({ 'left': (-100) + 'px' }, 200);
+    // $("#reset")
+    //   .animate({ "left": (-100) + "px" }, 200)
+    //   .animate({ "left": (+200) + "px" }, 200)
+    //   .animate({ "left": (-100) + "px" }, 200);
     coffeeLayer.setVisible(false);
   });
 
@@ -157,15 +166,76 @@ function createCoffeeLayer() {
   map.render()
 })();
 
-$("#info").popover({
-  title: "Foo bar baz",
-  content: "Bar baz qux"
-})
-$('#info').on('shown.bs.popover', (event) => {
+const msgs = [
+  {
+    msg: "Looks like you’re trying to read a palimpsest!",
+  },
+  {
+    msg: "Psst… pinch to zoom, rotate with three fingers.",
+  },
+  {
+    msg: "When you’ve finished, you can keep your image!",
+    call: () => $done.addClass("hi"),
+  },
+  {
+    msg: "Earlier scholars found sunlight useful.",
+    call: () => $sun.addClass("hi"),
+  },
+  {
+    msg: "This may take some time… would you like some coffee while you work?",
+    call: () => $coffee.addClass("hi"),
+  },
+  {
+    msg: "Have you considered applying a chemical reagent?",
+    call: () => $flask.addClass("hi"),
+  },
+  {
+    msg: "Hope you had fun exploring this page from the Codex Zacynthius!"
+  },
+];
+
+let { msg, timeout, call } = msgs.shift();
+$info.popover({ content: msg, trigger: "manual" });
+$info.on("shown.bs.popover", (event) => {
   event.target.classList.remove("fa-info");
   event.target.classList.add("fa-times");
-})
-$('#info').on('hidden.bs.popover', (event) => {
+  if (typeof call !== "undefined") {
+    call();
+  };
+  if (msgs.length) {
+    const msgObj = msgs.shift();
+    msg = msgObj.msg;
+    timeout = msgObj.timeout;
+    call = msgObj.call;
+    // TODO: set a reasonable default timeout here and/or custom timeouts for
+    // the individual messages in the msgs array above.
+    timeout = timeout || 5000;
+  };
+});
+$info.on("hidden.bs.popover", (event) => {
   event.target.classList.remove("fa-times");
   event.target.classList.add("fa-info");
-})
+  $(".hi").removeClass("hi");
+  $info.attr("data-content", msg);
+  if (msgs.length) {
+    const timer = setTimeout(() => {
+      $info.popover("show");
+      clearTimeout(timer);
+    }, timeout);
+  };
+});
+
+// TODO: change click → touchend for running on iPad
+// Handling this in a robust way is surprisingly hard:
+// https://stackoverflow.com/questions/25572070/javascript-touchend-versus-click-dilemma
+// In particular, adding two event listeners for both click and touchend ends
+// up firing the callback twice on devices which trigger both events.
+const startTourEventType = "touchend";
+function startTour() {
+  $info.popover("show");
+  document.removeEventListener(startTourEventType, startTour);
+  info.addEventListener("click", () => $info.popover("toggle"));
+}
+document.addEventListener(startTourEventType, startTour);
+
+// TODO: rework this entire message thing so that messages reliably don't get lost
