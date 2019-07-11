@@ -22,14 +22,12 @@
 
     <div id="sidebar">
       <button id="reset" class="btn btn-lg fas fa-sync-alt fa-2x" type="button"></button>
-      <button id="sun" class="tour btn btn-lg fas fa-sun fa-2x" type="button" data-toggle="modal"
-        data-target="#sun-modal" data-content="Earlier scholars found sunlight useful."></button>
-      <button id="flask" class="tour btn btn-lg fas fa-flask fa-2x" type="button" data-toggle="modal"
-        data-target="#flask-modal" data-content="Have you considered applying a chemical reagent?"></button>
+      <button id="sun" class="tour btn btn-lg fas fa-sun fa-2x" type="button"
+        data-content="Earlier scholars found sunlight useful."></button>
+      <button id="flask" class="tour btn btn-lg fas fa-flask fa-2x" type="button"
+        data-content="Have you considered applying a chemical reagent?"></button>
       <button id="coffee" class="tour btn btn-lg fas fa-coffee fa-2x" type="button"
         data-content="This may take some time… would you like some coffee while you work?"></button>
-      <!-- data-toggle="modal"
-        data-target="#coffee-modal" -->
     </div>
 
     <div id="controls">
@@ -48,7 +46,7 @@
 
     </div>
 
-    <div id="sun-modal" class="modal" tabindex="-1" role="dialog">
+    <div id="sun-modal" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -64,35 +62,43 @@
               exposure to direct sunlight, the writing on the manuscript will
               start to fade.
             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="flask-modal" class="modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">You tried to use a chemical reagent on the palimpsest…</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
             <p>
-              … but luckily, a conservator from the Cambridge University
-              Library stopped you in the nick of time! In the past, people
-              experimented with chemical reagents on palimpsests to enhance
-              the text that had been written over. These chemicals were very
-              destructive, and would eventually turn the palimpsest black and
-              unreadable.
+              If you like, you can undo this using the <i class="fas
+              fa-sync-alt"></i> button in the sidebar (not found on actual
+              palimpsests).
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="coffee-modal" class="modal" tabindex="-1" role="dialog">
+    <div id="flask-modal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">You used a chemical reagent on the palimpsest</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              In the past, people experimented with chemical reagents on
+              palimpsests to enhance the text that had been written over.
+              These chemicals were very destructive, and would eventually
+              turn the palimpsest black and unreadable.
+            </p>
+            <p>
+              If you like, you can undo this using the <i class="fas
+              fa-sync-alt"></i> button in the sidebar (not found on actual
+              palimpsests).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="coffee-modal" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -106,15 +112,18 @@
               … and accidentally left a cup stain on the palimpsest! In general,
               safety precautions while working with such priceless artifacts forbid eating
               or drinking in your workspace area to prevent accidents of this type.
-              Luckily, your palimpsest is just a virtual copy, so you can clean it
-              up with the <i class="fas fa-sync-alt"></i> button in the sidebar.
+            </p>
+            <p>
+              If you like, you can undo this using the <i class="fas
+              fa-sync-alt"></i> button in the sidebar (not found on actual
+              palimpsests).
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="done-modal" class="modal" tabindex="-1" role="dialog">
+    <div id="done-modal" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -134,7 +143,7 @@
               <input type="email" class="form-control" id="email" aria-describedby="email-help"
                 placeholder="Enter e-mail">
               <small id="email-help" class="form-text text-muted">
-                We will securely delete your e-mail address after sending the e-mail.
+                We will securely delete your e-mail address after processing your request.
               </small>
             </div>
           </div>

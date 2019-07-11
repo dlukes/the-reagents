@@ -25,8 +25,6 @@ const container = document.getElementById("map");
 const intensity = document.getElementById("intensity");
 const contrast = document.getElementById("contrast");
 const split = document.getElementById("split");
-const reset = document.getElementById("reset");
-const coffee = document.getElementById("coffee");
 
 noUiSlider.create(intensity, {
   start: 30,
@@ -55,17 +53,21 @@ noUiSlider.create(split, {
 
 const $info = $("#info");
 const $done = $("#done");
+const $reset = $("#reset");
 const $sun = $("#sun");
 const $flask = $("#flask");
 const $coffee = $("#coffee");
 
 // ---------------------------------------- "Map" (= manuscript) and layer helpers ----------------------------------------
 
-const map = new Map({
+map = new Map({
   target: container,
   controls: [],
 });
-let baseZoom, baseCenter;
+let baseZoom, baseCenter, baseRotation;
+let maxXCoord, maxYCoord;
+let exposedToSun = false,
+  exposedToReagent = false;
 const info1 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_PSC/info.json";
 const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_KTK_triple/info.json";
 
@@ -122,14 +124,17 @@ async function createManuscriptLayer(iiifInfoUrl, map, useRaster) {
     constrainOnlyCenter: true
   }));
   map.getView().fit(iiifExtent);
-  const midX = iiifExtent[2] / 2,
-    midY = iiifExtent[1] / 2;
+  maxYCoord = iiifExtent[1];
+  maxXCoord = iiifExtent[2];
+  const midX = maxXCoord / 2,
+    midY = maxYCoord / 2;
   initializeOverlay(map, "left-overlay", "center-right", midX - 150, midY);
   initializeOverlay(map, "right-overlay", "center-left", midX + 150, midY);
 
   const view = map.getView();
   baseCenter = view.getCenter();
   baseZoom = view.getZoom();
+  baseRotation = view.getRotation();
 
   return { iiif, raster, image };
 }
@@ -151,10 +156,14 @@ function createCoffeeLayer() {
     opacity: 0,
   });
   map.addLayer(coffee);
-  // coffee.on("prerender", (event) => {
-  //   event.context.globalCompositeOperation = "color-burn";
-  // })
   return coffee;
+}
+
+function createExposureRect(fillStyle, ctx, pixelRatio) {
+  const [xStart, yStart] = map.getPixelFromCoordinate([0, 0]).map(x => x * pixelRatio);
+  const [xEnd, yEnd] = map.getPixelFromCoordinate([maxXCoord, maxYCoord]).map(x => x * pixelRatio);
+  ctx.fillStyle = fillStyle;
+  ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
 }
 
 // ---------------------------------------- Create layers ----------------------------------------
@@ -171,16 +180,58 @@ function createCoffeeLayer() {
   contrast.noUiSlider.on("update", () => raster.changed());
   intensity.noUiSlider.on("update", () => map.render());
   split.noUiSlider.on("update", () => map.render());
-  coffee.addEventListener("click", () => {
-    // map.getView().animate(
-    //   { zoom: baseZoom, center: baseCenter, duration: 500 },
-    //   () => {
-    //     coffeeLayer.setOpacity(1);
-    //   }
-    // );
+  $reset.click(() => {
+    map.getView().animate(
+      { zoom: baseZoom, center: baseCenter, rotation: baseRotation, duration: 500 },
+      hideTour
+    );
+    coffeeLayer.setOpacity(0);
+    exposedToSun = false;
+    exposedToReagent = false;
+  });
+  $sun.click(() => {
+    const view = map.getView();
+    const zoom = view.getZoom();
+    view.animate(
+      { zoom: zoom + 1 },
+      { zoom },
+      () => {
+        exposedToSun = true;
+        map.render();
+        setTimeout(() => {
+          $("#sun-modal").modal("show");
+          hideTour();
+        }, 1000);
+      },
+    );
+  });
+  $flask.click(() => {
+    const view = map.getView();
+    const rotation = view.getRotation();
+    const duration = 200;
+    view.animate(
+      { rotation: rotation + Math.PI, duration },
+      { rotation: rotation + 2 * Math.PI, duration },
+      { rotation: rotation + Math.PI, duration },
+      { rotation: rotation + 2 * Math.PI, duration },
+      { rotation: rotation + Math.PI, duration },
+      { rotation: rotation + 2 * Math.PI, duration },
+      { rotation: rotation + Math.PI, duration },
+      { rotation: rotation + 2 * Math.PI, duration },
+      () => {
+        exposedToReagent = true;
+        map.render();
+        setTimeout(() => {
+          $("#flask-modal").modal("show");
+          hideTour();
+        }, 1000);
+      },
+    );
+  });
+  $coffee.click(() => {
     const duration = 200;
     map.getView().animate(
-      { zoom: baseZoom, center: baseCenter, duration },
+      { zoom: baseZoom, center: baseCenter, rotation: baseRotation, duration },
       { zoom: baseZoom, duration },
       { zoom: baseZoom + 1, duration },
       { zoom: baseZoom, duration },
@@ -190,12 +241,12 @@ function createCoffeeLayer() {
       { zoom: baseZoom, duration },
       () => {
         coffeeLayer.setOpacity(1);
+        setTimeout(() => {
+          $("#coffee-modal").modal("show");
+          hideTour();
+        }, 1000);
       },
     );
-  });
-  // TODO: reset should probably also reset the sliders...?
-  reset.addEventListener("click", () => {
-    coffeeLayer.setOpacity(0);
   });
 
   // dynamically set the contrast value
@@ -206,15 +257,24 @@ function createCoffeeLayer() {
     data.contrast = contrastVal;
   });
 
-  // before rendering the layer...
-  image.on("prerender", function (event) {
-    // ... adjust opacity...
+  // before rendering the layer
+  image.on("prerender", (event) => {
+    const ctx = event.context;
+    const pixelRatio = event.frameState.pixelRatio;
+
+    if (exposedToReagent) {
+      // if a reagent has been applied, "darken" the manuscript
+      createExposureRect("rgba(0, 0, 0, .9)", ctx, pixelRatio);
+    } else if (exposedToSun) {
+      // else if sunlight has been applied, "fade" the manuscript
+      createExposureRect("rgba(255, 255, 255, .7)", ctx, pixelRatio);
+    }
+
+    // adjust opacity
     const opacityVal = parseInt(intensity.noUiSlider.get());
     image.setOpacity(opacityVal / 100);
 
-    // ... and perform the splitscreen clipping
-    const ctx = event.context;
-    const pixelRatio = event.frameState.pixelRatio;
+    // perform the splitscreen clipping
     const splitVal = parseInt(split.noUiSlider.get());
     ctx.save();
     ctx.beginPath();
@@ -226,7 +286,7 @@ function createCoffeeLayer() {
   });
 
   // after rendering the layer, restore the canvas context
-  image.on("postrender", function (event) {
+  image.on("postrender", (event) => {
     const ctx = event.context;
     ctx.restore();
   });
@@ -239,60 +299,45 @@ function createCoffeeLayer() {
 $(".tour").popover({
   trigger: "manual",
 });
-$info.on("click", () => $info.popover("toggle"));
+$info.on("click", () => {
+  $info.popover("toggle");
+  $done.toggleClass("hi");
+});
 const tour = [
-  [
-    () => {
-      $info.popover("show");
-      $done.addClass("hi");
-    },
-    () => {
-      $info.popover("hide");
-      $done.removeClass("hi");
-    }
-  ],
-  [
-    () => {
-      $sun.popover("show");
-      $sun.addClass("hi");
-    },
-    () => {
-      $sun.popover("hide");
-      $sun.removeClass("hi");
-    }
-  ],
-  [
-    () => {
-      $coffee.popover("show");
-      $coffee.addClass("hi");
-    },
-    () => {
-      $coffee.popover("hide");
-      $coffee.removeClass("hi");
-    }
-  ],
-  [
-    () => {
-      $flask.popover("show");
-      $flask.addClass("hi");
-    },
-    () => {
-      $flask.popover("hide");
-      $flask.removeClass("hi");
-    }
-  ],
-]
+  [$info, $done],
+  [$sun, $sun],
+  [$coffee, $coffee],
+  [$flask, $flask],
+];
+
+function hideTour() {
+  $(".tour").popover("hide");
+  $(".hi").removeClass("hi");
+}
 
 function tourNext() {
   if (!tour.length) {
     return;
-  };
-  const [before, after] = tour.shift();
-  before();
-  setTimeout(() => {
-    after();
-    setTimeout(tourNext, 10000);
-  }, 10000);
+  }
+  const [$popover, $hi] = tour.shift();
+  $popover.popover("show");
+  $hi.addClass("hi");
+  let firstCall = true;
+  const destroy = () => {
+    if (firstCall) {
+      $popover.off("click", destroy);
+      $hi.off("click", destroy);
+      $popover.popover("hide");
+      $hi.removeClass("hi");
+      // TODO: adjust or get rid of timeout for the demo
+      setTimeout(() => {
+        tourNext()
+      }, 10000);
+      firstCall = false;
+    }
+  }
+  $popover.click(destroy);
+  $hi.click(destroy);
 }
 
 const tourTriggers = "click touchend wheel";
