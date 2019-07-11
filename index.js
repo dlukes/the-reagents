@@ -149,7 +149,7 @@ function createCoffeeLayer() {
     coffeeTop = coffeeBottom + coffeeHeight * scale;
   const coffee = new ImageLayer({
     source: new Static({
-      url: require("./images/coffee-stain.png"),
+      url: require("./coffee-stain.png"),
       imageExtent: [coffeeLeft, coffeeBottom, coffeeRight, coffeeTop],
     }),
     zindex: 10,
@@ -159,11 +159,33 @@ function createCoffeeLayer() {
   return coffee;
 }
 
-function createExposureRect(fillStyle, ctx, pixelRatio) {
-  const [xStart, yStart] = map.getPixelFromCoordinate([0, 0]).map(x => x * pixelRatio);
-  const [xEnd, yEnd] = map.getPixelFromCoordinate([maxXCoord, maxYCoord]).map(x => x * pixelRatio);
+function createExposureRect(ctx, fillStyle, blend) {
+  // TODO: figure out a way to overlay only the manuscript with the exposure
+  // rectangle -- variations on the following doesn't seem to work:
+
+  // var timesRatio = x => x * pixelRatio;
+  // const [x0, y0] = map.getPixelFromCoordinate([0, 0]).map(timesRatio);
+  // const [x1, y1] = map.getPixelFromCoordinate([maxXCoord, 0]).map(timesRatio);
+  // const [x2, y2] = map.getPixelFromCoordinate([maxXCoord, maxYCoord]).map(timesRatio);
+  // const [x3, y3] = map.getPixelFromCoordinate([0, maxYCoord]).map(timesRatio);
+  // console.log(x0, y0);
+
+  // this would be with ctx.setTransform(event.frameState.coordinateToPixelTransform),
+  // or with x0, y0 etc. from above
+  // ctx.save();
+  // ctx.beginPath();
+  // ctx.moveTo(0, 0);
+  // ctx.lineTo(maxXCoord, 0);
+  // ctx.lineTo(maxXCoord, maxYCoord);
+  // ctx.lineTo(0, maxXCoord);
+  // ctx.fillStyle = fillStyle;
+  // ctx.fill();
+  // ctx.restore();
+
   ctx.fillStyle = fillStyle;
-  ctx.fillRect(xStart, yStart, xEnd - xStart, yEnd - yStart);
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  ctx.globalCompositeOperation = blend;
 }
 
 // ---------------------------------------- Create layers ----------------------------------------
@@ -197,6 +219,7 @@ function createExposureRect(fillStyle, ctx, pixelRatio) {
       { zoom },
       () => {
         exposedToSun = true;
+        exposedToReagent = false;
         map.render();
         setTimeout(() => {
           $("#sun-modal").modal("show");
@@ -219,6 +242,7 @@ function createExposureRect(fillStyle, ctx, pixelRatio) {
       { rotation: rotation + Math.PI, duration },
       { rotation: rotation + 2 * Math.PI, duration },
       () => {
+        exposedToSun = false;
         exposedToReagent = true;
         map.render();
         setTimeout(() => {
@@ -250,7 +274,7 @@ function createExposureRect(fillStyle, ctx, pixelRatio) {
   });
 
   // dynamically set the contrast value
-  raster.on("beforeoperations", (event) => {
+  raster.on("beforeoperations", event => {
     // this is where you can pass data into the pixel operation
     const contrastVal = parseInt(contrast.noUiSlider.get());
     const data = event.data;
@@ -258,35 +282,38 @@ function createExposureRect(fillStyle, ctx, pixelRatio) {
   });
 
   // before rendering the layer
-  image.on("prerender", (event) => {
+  image.on("prerender", event => {
     const ctx = event.context;
     const pixelRatio = event.frameState.pixelRatio;
-
-    if (exposedToReagent) {
-      // if a reagent has been applied, "darken" the manuscript
-      createExposureRect("rgba(0, 0, 0, .9)", ctx, pixelRatio);
-    } else if (exposedToSun) {
-      // else if sunlight has been applied, "fade" the manuscript
-      createExposureRect("rgba(255, 255, 255, .7)", ctx, pixelRatio);
-    }
+    ctx.save();
+    // TODO: delete this, can't make it work
+    // const transform = event.frameState.coordinateToPixelTransform;
+    // ctx.setTransform(...transform);
 
     // adjust opacity
     const opacityVal = parseInt(intensity.noUiSlider.get());
     image.setOpacity(opacityVal / 100);
 
+    if (exposedToReagent) {
+      // if a reagent has been applied, "darken" the manuscript
+      createExposureRect(ctx, "rgba(0, 0, 0, .8)", "darken");
+    } else if (exposedToSun) {
+      // else if sunlight has been applied, "fade" the manuscript
+      createExposureRect(ctx, "rgba(255, 255, 255, .7)", "lighten");
+    }
+
     // perform the splitscreen clipping
     const splitVal = parseInt(split.noUiSlider.get());
-    ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, ctx.canvas.width * splitVal / 100, ctx.canvas.height);
     ctx.lineWidth = 5 * pixelRatio;
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
     ctx.stroke();
     ctx.clip();
   });
 
   // after rendering the layer, restore the canvas context
-  image.on("postrender", (event) => {
+  image.on("postrender", event => {
     const ctx = event.context;
     ctx.restore();
   });
