@@ -19,8 +19,7 @@ import Overlay from "ol/Overlay";
 
 import "./index.css";
 
-const info1 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_PSC/info.json";
-const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_KTK_triple/info.json";
+// ---------------------------------------- UI elements ----------------------------------------
 
 const container = document.getElementById("map");
 const intensity = document.getElementById("intensity");
@@ -60,10 +59,15 @@ const $sun = $("#sun");
 const $flask = $("#flask");
 const $coffee = $("#coffee");
 
-map = new Map({
+// ---------------------------------------- "Map" (= manuscript) and layer helpers ----------------------------------------
+
+const map = new Map({
   target: container,
   controls: [],
 });
+let baseZoom, baseCenter;
+const info1 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_PSC/info.json";
+const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_KTK_triple/info.json";
 
 function initializeOverlay(map, id, positioning, x, y) {
   const overlay = new Overlay({
@@ -74,7 +78,7 @@ function initializeOverlay(map, id, positioning, x, y) {
   map.addOverlay(overlay);
 }
 
-async function createImageLayer(iiifInfoUrl, map) {
+async function createManuscriptLayer(iiifInfoUrl, map, useRaster) {
   const response = await fetch(iiifInfoUrl);
   const iiifInfo = await response.json();
   const options = new IIIFInfo(iiifInfo).getTileSourceOptions();
@@ -82,32 +86,36 @@ async function createImageLayer(iiifInfoUrl, map) {
   options.crossOrigin = "anonymous";
 
   const iiif = new IIIF(options);
+  // TODO get rid of preload, it doesn't seem to be doing anything
+  // const tiles = new TileLayer({ source: iiif, preload: Infinity });
   const tiles = new TileLayer({ source: iiif });
-  const raster = new RasterSource({
-    sources: [tiles],
-    operation: function (pixels_1, data) {
-      const contrast = data.contrast || 0;
-      const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-      for (let i = 0; i < 3; i++) {
-        const ans = factor * (pixels_1[0][i] - 128) + 128;
-        if (ans < 0) {
-          pixels_1[0][i] = 0;
+  let raster, image;
+  if (useRaster) {
+    raster = new RasterSource({
+      sources: [tiles],
+      operation: function (pixels, data) {
+        const contrast = data.contrast || 0;
+        const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+        for (let i = 0; i < 3; i++) {
+          const ans = factor * (pixels[0][i] - 128) + 128;
+          if (ans < 0) {
+            pixels[0][i] = 0;
+          }
+          else if (ans > 255) {
+            pixels[0][i] = 255;
+          }
+          else {
+            pixels[0][i] = ans;
+          }
         }
-        else if (ans > 255) {
-          pixels_1[0][i] = 255;
-        }
-        else {
-          pixels_1[0][i] = ans;
-        }
-      }
-      ;
-      return pixels_1[0];
-    }
-  });
-  const image = new ImageLayer({ source: raster });
+        return pixels[0];
+      },
+    });
+    image = new ImageLayer({ source: raster });
+  }
 
   const iiifExtent = iiif.getTileGrid().getExtent();
-  map.addLayer(image);
+  map.addLayer(useRaster ? image : tiles);
   map.setView(new View({
     resolutions: iiif.getTileGrid().getResolutions(),
     extent: iiifExtent,
@@ -118,6 +126,10 @@ async function createImageLayer(iiifInfoUrl, map) {
     midY = iiifExtent[1] / 2;
   initializeOverlay(map, "left-overlay", "center-right", midX - 150, midY);
   initializeOverlay(map, "right-overlay", "center-left", midX + 150, midY);
+
+  const view = map.getView();
+  baseCenter = view.getCenter();
+  baseZoom = view.getZoom();
 
   return { iiif, raster, image };
 }
@@ -135,19 +147,24 @@ function createCoffeeLayer() {
       url: require("./images/coffee-stain.png"),
       imageExtent: [coffeeLeft, coffeeBottom, coffeeRight, coffeeTop],
     }),
-    zindex: 10
+    zindex: 10,
+    opacity: 0,
   });
   map.addLayer(coffee);
-  coffee.setVisible(false);
   // coffee.on("prerender", (event) => {
   //   event.context.globalCompositeOperation = "color-burn";
   // })
   return coffee;
 }
 
+// ---------------------------------------- Create layers ----------------------------------------
+//
+// NOTE: Some of these functions have an async API, so it's all wrapped in an
+// async IIFE.
+
 (async () => {
-  await createImageLayer(info1, map);
-  const { raster, image } = await createImageLayer(info2, map);
+  await createManuscriptLayer(info1, map, false);
+  const { raster, image } = await createManuscriptLayer(info2, map, true);
   const coffeeLayer = createCoffeeLayer();
 
   // hook up input events to the "map"
@@ -155,11 +172,30 @@ function createCoffeeLayer() {
   intensity.noUiSlider.on("update", () => map.render());
   split.noUiSlider.on("update", () => map.render());
   coffee.addEventListener("click", () => {
-    coffeeLayer.setVisible(true)
+    // map.getView().animate(
+    //   { zoom: baseZoom, center: baseCenter, duration: 500 },
+    //   () => {
+    //     coffeeLayer.setOpacity(1);
+    //   }
+    // );
+    const duration = 200;
+    map.getView().animate(
+      { zoom: baseZoom, center: baseCenter, duration },
+      { zoom: baseZoom, duration },
+      { zoom: baseZoom + 1, duration },
+      { zoom: baseZoom, duration },
+      { zoom: baseZoom + 1, duration },
+      { zoom: baseZoom, duration },
+      { zoom: baseZoom + 1, duration },
+      { zoom: baseZoom, duration },
+      () => {
+        coffeeLayer.setOpacity(1);
+      },
+    );
   });
   // TODO: reset should probably also reset the sliders...?
   reset.addEventListener("click", () => {
-    coffeeLayer.setVisible(false);
+    coffeeLayer.setOpacity(0);
   });
 
   // dynamically set the contrast value
@@ -197,6 +233,8 @@ function createCoffeeLayer() {
 
   map.render()
 })();
+
+// ---------------------------------------- Tour ----------------------------------------
 
 $(".tour").popover({
   trigger: "manual",
@@ -254,7 +292,7 @@ function tourNext() {
   setTimeout(() => {
     after();
     setTimeout(tourNext, 10000);
-  }, 5000);
+  }, 10000);
 }
 
 const tourTriggers = "click touchend wheel";
