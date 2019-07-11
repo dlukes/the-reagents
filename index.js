@@ -1,6 +1,8 @@
 import $ from "jquery";
 import popper from "popper.js";
 import bootstrap from "bootstrap";
+import noUiSlider from "nouislider";
+import "nouislider/distribute/nouislider.css";
 import "bootstrap/dist/css/bootstrap.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 
@@ -13,6 +15,7 @@ import IIIFInfo from "ol/format/IIIFInfo";
 import RasterSource from "ol/source/Raster";
 import ImageLayer from "ol/layer/Image";
 import Static from "ol/source/ImageStatic.js";
+import Overlay from "ol/Overlay";
 
 import "./index.css";
 
@@ -20,12 +23,37 @@ const info1 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Code
 const info2 = "https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/Codex_Zacynthius!Zacy_separate_images!00019-V_KTK_triple/info.json";
 
 const container = document.getElementById("map");
-const contrast = document.getElementById("contrast");
 const intensity = document.getElementById("intensity");
+const contrast = document.getElementById("contrast");
 const split = document.getElementById("split");
 const info = document.getElementById("info");
 const reset = document.getElementById("reset");
 const coffee = document.getElementById("coffee");
+
+noUiSlider.create(intensity, {
+  start: 30,
+  connect: "lower",
+  range: {
+    "min": 30,
+    "max": 100,
+  }
+});
+noUiSlider.create(contrast, {
+  start: 0,
+  connect: "lower",
+  range: {
+    "min": -150,
+    "max": 255,
+  }
+});
+noUiSlider.create(split, {
+  start: 50,
+  connect: "lower",
+  range: {
+    "min": 0,
+    "max": 100,
+  }
+});
 
 const $info = $("#info");
 const $done = $("#done");
@@ -34,10 +62,19 @@ const $sun = $("#sun");
 const $flask = $("#flask");
 const $coffee = $("#coffee");
 
-const map = new Map({
+map = new Map({
   target: container,
   controls: [],
 });
+
+function initializeOverlay(map, id, positioning, x, y) {
+  const overlay = new Overlay({
+    element: document.getElementById(id),
+    positioning,
+  });
+  overlay.setPosition([x, y]);
+  map.addOverlay(overlay);
+}
 
 async function createImageLayer(iiifInfoUrl, map) {
   const response = await fetch(iiifInfoUrl);
@@ -71,13 +108,18 @@ async function createImageLayer(iiifInfoUrl, map) {
   });
   const image = new ImageLayer({ source: raster });
 
+  const iiifExtent = iiif.getTileGrid().getExtent();
   map.addLayer(image);
   map.setView(new View({
     resolutions: iiif.getTileGrid().getResolutions(),
-    extent: iiif.getTileGrid().getExtent(),
+    extent: iiifExtent,
     constrainOnlyCenter: true
   }));
-  map.getView().fit(iiif.getTileGrid().getExtent());
+  map.getView().fit(iiifExtent);
+  const midX = iiifExtent[2] / 2,
+    midY = iiifExtent[1] / 2;
+  initializeOverlay(map, "left-overlay", "center-right", midX - 150, midY);
+  initializeOverlay(map, "right-overlay", "center-left", midX + 150, midY);
 
   return { iiif, raster, image };
 }
@@ -92,7 +134,6 @@ function createCoffeeLayer() {
     coffeeTop = coffeeBottom + coffeeHeight * scale;
   const coffee = new ImageLayer({
     source: new Static({
-      // attributions: "© <a href="http://xkcd.com/license.html">xkcd</a>",
       url: require("./images/coffee-stain.png"),
       imageExtent: [coffeeLeft, coffeeBottom, coffeeRight, coffeeTop],
     }),
@@ -112,42 +153,35 @@ function createCoffeeLayer() {
   const coffeeLayer = createCoffeeLayer();
 
   // hook up input events to the "map"
-  contrast.addEventListener("input", () => raster.changed());
-  intensity.addEventListener("input", () => map.render());
-  split.addEventListener("input", () => map.render());
+  contrast.noUiSlider.on("update", () => raster.changed());
+  intensity.noUiSlider.on("update", () => map.render());
+  split.noUiSlider.on("update", () => map.render());
   coffee.addEventListener("click", () => {
-    // $("#coffee")
-    //   .animate({ "left": (-10) + "px" }, 200)
-    //   .animate({ "left": (+20) + "px" }, 200)
-    //   .animate({ "left": (-10) + "px" }, 200);
     coffeeLayer.setVisible(true)
   });
   // TODO: reset should probably also reset the sliders...?
   reset.addEventListener("click", () => {
-    // $("#reset")
-    //   .animate({ "left": (-100) + "px" }, 200)
-    //   .animate({ "left": (+200) + "px" }, 200)
-    //   .animate({ "left": (-100) + "px" }, 200);
     coffeeLayer.setVisible(false);
   });
 
   // dynamically set the contrast value
   raster.on("beforeoperations", (event) => {
     // this is where you can pass data into the pixel operation
-    const contrastVal = parseInt(contrast.value);
+    const contrastVal = parseInt(contrast.noUiSlider.get());
     const data = event.data;
     data.contrast = contrastVal;
   });
 
-  // before rendering the layer, do some clipping and adjust opacity
+  // before rendering the layer...
   image.on("prerender", function (event) {
-    const opacityVal = parseInt(intensity.value);
-    // image1.setOpacity(1 - opacityVal / 100);
+    // ... adjust opacity...
+    const opacityVal = parseInt(intensity.noUiSlider.get());
     image.setOpacity(opacityVal / 100);
 
+    // ... and perform the splitscreen clipping
     const ctx = event.context;
     const pixelRatio = event.frameState.pixelRatio;
-    const splitVal = parseInt(split.value);
+    const splitVal = parseInt(split.noUiSlider.get());
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, ctx.canvas.width * splitVal / 100, ctx.canvas.height);
@@ -168,13 +202,7 @@ function createCoffeeLayer() {
 
 const msgs = [
   {
-    msg: "Looks like you’re trying to read a palimpsest!",
-  },
-  {
-    msg: "Psst… pinch to zoom, rotate with three fingers.",
-  },
-  {
-    msg: "When you’ve finished, you can keep your image!",
+    msg: "Looks like you’re trying to read a palimpsest! Pinch to zoom, rotate with two fingers. Adjust light levels using sliders below. When you have finished, e-mail yourself a copy of your masterpiece!",
     call: () => $done.addClass("hi"),
   },
   {
@@ -225,17 +253,14 @@ $info.on("hidden.bs.popover", (event) => {
   };
 });
 
-// TODO: change click → touchend for running on iPad
-// Handling this in a robust way is surprisingly hard:
-// https://stackoverflow.com/questions/25572070/javascript-touchend-versus-click-dilemma
-// In particular, adding two event listeners for both click and touchend ends
-// up firing the callback twice on devices which trigger both events.
-const startTourEventType = "touchend";
+const tourTriggers = "click touchend wheel";
 function startTour() {
+  $(document).off(tourTriggers, startTour);
+  console.log("TOUR");
+  map.getOverlays().clear();
   $info.popover("show");
-  document.removeEventListener(startTourEventType, startTour);
   info.addEventListener("click", () => $info.popover("toggle"));
 }
-document.addEventListener(startTourEventType, startTour);
+$(document).on(tourTriggers, startTour);
 
-// TODO: rework this entire message thing so that messages reliably don't get lost
+// TODO: rework this entire message thing so that messages reliably don"t get lost

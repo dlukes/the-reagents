@@ -1,7 +1,8 @@
 :root {
   --bg: rgba(255, 255, 255, .5);
+  --hi: yellow;
   --floating-btn-offset: 1rem;
-  --floating-btn-side: 3rem;
+  --floating-btn-side: 3.5rem;
   /* --sidebar-btn-side: 3.8rem; */
 }
 
@@ -13,6 +14,12 @@
   width: 100vw;
   height: 100vh;
   background-color: black;
+}
+
+.overlay {
+  background: var(--bg);
+  padding: 2rem;
+  border-radius: .3rem;
 }
 
 .floating-btn {
@@ -50,22 +57,33 @@
 }
 
 #controls {
-  height: 8.5rem;
+  display: grid;
+  grid-template-columns: 3rem auto 5rem;
+  /* grid-row-gap: .5rem; */
+  height: 8rem;
   width: 100vw;
-  padding: .5rem;
+  bottom: 0;
+  padding: 1rem;
+  /* padding-bottom: 1.5rem; */
   position: fixed;
   background: var(--bg);
-  bottom: 0;
-}
-
-.flex-container {
-  display: flex;
-  padding: .5rem
 }
 
 .slider {
-  flex-grow: 1;
-  padding-left: .5rem;
+  margin-right: .5rem;
+}
+
+.noUi-target {
+  background: transparent;
+}
+
+.noUi-connect {
+  background: rgba(87, 87, 87, .5);
+}
+
+.noUi-connects {
+  /* background: rgba(152, 152, 152, .5); */
+  background: rgba(255, 255, 255, .3);
 }
 
 input {
@@ -77,6 +95,6 @@ input {
 }
 
 .hi {
-  box-shadow: 0 0 5rem 1rem fuchsia;
-  background: fuchsia;
+  box-shadow: 0 0 5rem 1rem var(--hi);
+  background: var(--hi);
 }

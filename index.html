@@ -11,10 +11,12 @@
   <div class="container-fluid">
 
     <div id="map" class="map"></div>
+    <h5 id="left-overlay" class="overlay">Multispectral</h5>
+    <h5 id="right-overlay" class="overlay">Daylight</h5>
 
     <button id="info" class="floating-btn btn btn-lg fas fa-info" type="button"></button>
 
-    <button id="done" class="floating-btn btn btn-lg fas fa-check" type="button" data-toggle="modal"
+    <button id="done" class="floating-btn btn btn-lg fas fa-envelope" type="button" data-toggle="modal"
       data-target="#done-modal"></button>
 
     <div id="sidebar">
@@ -29,27 +31,17 @@
 
     <div id="controls">
 
-      <div class="flex-container">
-        <div class="fas fa-magic fa-lg"></div>
-        <div class="slider">
-          <input id="intensity" class="custom-range" type="range" min="30" max="100" value="30" />
-        </div>
-      </div>
+      <div class="fas fa-magic fa-lg"></div>
+      <div id="intensity" class="slider"></div>
+      <div>Opacity</div>
 
-      <div class="flex-container">
-        <div class="fas fa-adjust fa-lg"></div>
-        <div class="slider">
-          <input id="contrast" class="custom-range form-control form-control-lg" type="range" min="-150" max="255"
-            value="0" />
-        </div>
-      </div>
+      <div class="fas fa-adjust fa-lg"></div>
+      <div id="contrast" class="slider"></div>
+      <div>Contrast</div>
 
-      <div class="flex-container">
-        <div class="fas fa-columns fa-lg"></div>
-        <div class="slider">
-          <input id="split" class="custom-range" type="range" min="0" max="100" value="50" />
-        </div>
-      </div>
+      <div class="fas fa-columns fa-lg"></div>
+      <div id="split" class="slider"></div>
+      <div>Splitscreen</div>
 
     </div>
 
@@ -65,9 +57,9 @@
           <div class="modal-body">
             <p>
               This is perhaps the oldest trick in the book for trying to read
-              palimpsests, but it has its drawbacks. Notably, after repeated
+              palimpsests, but it has its drawbacks. After repeated
               exposure to direct sunlight, the writing on the manuscript will
-              have a tendency to fade.
+              start to fade.
             </p>
           </div>
         </div>
@@ -87,11 +79,10 @@
             <p>
               … but luckily, a conservator from the Cambridge University
               Library stopped you in the nick of time! In the past, people
-              loved to experiment with chemical reagents on palimpsests, in
-              the hopes that they might get lucky and magically restore the
-              text that had been written over. Unfortunately, this typically
-              resulted in considerable damage to, or outright destruction of,
-              the palimpsest.
+              experimented with chemical reagents on palimpsests to enhance
+              the text that had been written over. These chemicals were very
+              destructive, and would eventually turn the palimpsest black and
+              unreadable.
             </p>
           </div>
         </div>
@@ -112,7 +103,7 @@
               … and accidentally left a cup stain on the palimpsest! In general,
               safety precautions while working with such priceless artifacts forbid eating
               or drinking in your workspace area to prevent accidents of this type.
-              Luckily, your palimpsest is just a virtual copy, so you can magically clean it
+              Luckily, your palimpsest is just a virtual copy, so you can clean it
               up with the <i class="fas fa-sync-alt"></i> button in the sidebar.
             </p>
           </div>
