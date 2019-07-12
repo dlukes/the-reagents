@@ -163,6 +163,7 @@ function createExposureRect(ctx, fillStyle, blend) {
   // TODO: figure out a way to overlay only the manuscript with the exposure
   // rectangle -- variations on the following doesn't seem to work:
 
+  // const pixelRatio = 2;
   // var timesRatio = x => x * pixelRatio;
   // const [x0, y0] = map.getPixelFromCoordinate([0, 0]).map(timesRatio);
   // const [x1, y1] = map.getPixelFromCoordinate([maxXCoord, 0]).map(timesRatio);
@@ -172,15 +173,13 @@ function createExposureRect(ctx, fillStyle, blend) {
 
   // this would be with ctx.setTransform(event.frameState.coordinateToPixelTransform),
   // or with x0, y0 etc. from above
-  // ctx.save();
   // ctx.beginPath();
-  // ctx.moveTo(0, 0);
-  // ctx.lineTo(maxXCoord, 0);
-  // ctx.lineTo(maxXCoord, maxYCoord);
-  // ctx.lineTo(0, maxXCoord);
+  // ctx.moveTo(x0, y0);
+  // ctx.lineTo(x1, y1);
+  // ctx.lineTo(x2, y2);
+  // ctx.lineTo(x3, y3);
   // ctx.fillStyle = fillStyle;
   // ctx.fill();
-  // ctx.restore();
 
   ctx.fillStyle = fillStyle;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -286,6 +285,7 @@ function createExposureRect(ctx, fillStyle, blend) {
     const ctx = event.context;
     const pixelRatio = event.frameState.pixelRatio;
     ctx.save();
+    // ctx.resetTransform();
     // TODO: delete this, can't make it work
     // const transform = event.frameState.coordinateToPixelTransform;
     // ctx.setTransform(...transform);
@@ -357,9 +357,9 @@ function tourNext() {
       $popover.popover("hide");
       $hi.removeClass("hi");
       // TODO: adjust or get rid of timeout for the demo
-      setTimeout(() => {
-        tourNext()
-      }, 10000);
+      // setTimeout(() => {
+      //   tourNext()
+      // }, 10000);
       firstCall = false;
     }
   }
@@ -371,6 +371,12 @@ const tourTriggers = "click touchend wheel";
 function startTour() {
   $(document).off(tourTriggers, startTour);
   map.getOverlays().clear();
-  tourNext();
+  // tourNext();
 }
 $(document).on(tourTriggers, startTour);
+// make tour advance on pressing N instead of automatically for demo purposes
+$(document).keyup(event => {
+  if (event.which === 78) {
+    tourNext();
+  }
+})
