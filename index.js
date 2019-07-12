@@ -356,10 +356,9 @@ function tourNext() {
       $hi.off("click", destroy);
       $popover.popover("hide");
       $hi.removeClass("hi");
-      // TODO: adjust or get rid of timeout for the demo
-      // setTimeout(() => {
-      //   tourNext()
-      // }, 10000);
+      setTimeout(() => {
+        tourNext()
+      }, 15000);
       firstCall = false;
     }
   }
@@ -371,16 +370,6 @@ const tourTriggers = "click touchend touchstart wheel";
 function startTour() {
   $(document).off(tourTriggers, startTour);
   map.getOverlays().clear();
-  // tourNext();
+  tourNext();
 }
 $(document).on(tourTriggers, startTour);
-// make tour advance on pressing N instead of automatically for demo purposes
-// F for fullscreen
-$(document).keyup(event => {
-  if (event.which === 78) {
-    tourNext();
-  } else if (event.which === 70) {
-    document.documentElement.mozRequestFullScreen();
-  }
-  // console.log(event.which);
-})

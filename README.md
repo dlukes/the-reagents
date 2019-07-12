@@ -1,8 +1,9 @@
 # Palimptastic
 
 This is an app prototype developed during the 2019 Hands:On Hackathon in
-Cambridge by team Reagents. It's intended use is for an interactive
-kiosk at a palimpsest exhibition.
+Cambridge by team Reagents. Its intended use is as an interactive kiosk
+at the upcoming palimpsest exhibition at the Cambridge University
+Library.
 
 # Instructions
 
@@ -14,13 +15,19 @@ npm install
 # run the development server
 npm start
 # build a static version of the app under dist/
-npm build
+npm run build
 ```
+
+Note that the manuscript images are loaded as IIIF tiles from
+<https://cdhlab-dev.lib.cam.ac.uk/handson/digilib/Scaler/IIIF/>, so if
+that server is not running, the app won't show anything interesting.
 
 # License
 
 All content is &copy; 2019 by Melonie Schmierer-Lee, Petra Mijanović,
 Rebeka Laučíková and David Lukeš, with contributions by Chris Sparks.
+Thank you to all the testers (designated or impromptu) for taking the
+time to provide valuable feedback!
 
 The code is provided under the terms of the [2-Clause BSD
 license](https://opensource.org/licenses/bsd-license.php).

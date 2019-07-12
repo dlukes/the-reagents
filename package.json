@@ -12,7 +12,12 @@
     "type": "git",
     "url": "git+https://github.com/dlukes/the-reagents.git"
   },
-  "keywords": ["hackathon", "manuscript", "palimpsest", "exhibition"],
+  "keywords": [
+    "hackathon",
+    "manuscript",
+    "palimpsest",
+    "exhibition"
+  ],
   "contributors": [
     "Melonie Schmierer-Lee",
     "Petra Mijanović",
