@@ -60,7 +60,7 @@ const $coffee = $("#coffee");
 
 // ---------------------------------------- "Map" (= manuscript) and layer helpers ----------------------------------------
 
-map = new Map({
+const map = new Map({
   target: container,
   controls: [],
 });
