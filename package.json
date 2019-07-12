@@ -5,14 +5,21 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "build": "rm -rf dist && parcel build --public-url . index.html"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dlukes/the-reagents.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["hackathon", "manuscript", "palimpsest", "exhibition"],
+  "contributors": [
+    "Melonie Schmierer-Lee",
+    "Petra Mijanović",
+    "Rebeka Laučíková",
+    "David Lukeš",
+    "Chris Sparks"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/dlukes/the-reagents/issues"

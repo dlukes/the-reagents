@@ -367,7 +367,7 @@ function tourNext() {
   $hi.click(destroy);
 }
 
-const tourTriggers = "click touchend wheel";
+const tourTriggers = "click touchend touchstart wheel";
 function startTour() {
   $(document).off(tourTriggers, startTour);
   map.getOverlays().clear();
