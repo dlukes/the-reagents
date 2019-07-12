@@ -375,8 +375,12 @@ function startTour() {
 }
 $(document).on(tourTriggers, startTour);
 // make tour advance on pressing N instead of automatically for demo purposes
+// F for fullscreen
 $(document).keyup(event => {
   if (event.which === 78) {
     tourNext();
+  } else if (event.which === 70) {
+    document.documentElement.mozRequestFullScreen();
   }
+  // console.log(event.which);
 })
